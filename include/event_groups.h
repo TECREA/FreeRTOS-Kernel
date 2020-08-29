@@ -19,8 +19,8 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * http://www.FreeRTOS.org
- * http://aws.amazon.com/freertos
+ * https://www.FreeRTOS.org
+ * https://github.com/FreeRTOS
  *
  */
 
@@ -94,7 +94,7 @@ typedef TickType_t               EventBits_t;
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  * EventGroupHandle_t xEventGroupCreate( void );
  * </pre>
  *
@@ -104,7 +104,7 @@ typedef TickType_t               EventBits_t;
  * block of memory, in which the event group's structure is stored.  If an event
  * groups is created using xEventGropuCreate() then the required memory is
  * automatically dynamically allocated inside the xEventGroupCreate() function.
- * (see http://www.freertos.org/a00111.html).  If an event group is created
+ * (see https://www.FreeRTOS.org/a00111.html).  If an event group is created
  * using xEventGropuCreateStatic() then the application writer must instead
  * provide the memory that will get used by the event group.
  * xEventGroupCreateStatic() therefore allows an event group to be created
@@ -120,7 +120,7 @@ typedef TickType_t               EventBits_t;
  *
  * @return If the event group was created then a handle to the event group is
  * returned.  If there was insufficient FreeRTOS heap available to create the
- * event group then NULL is returned.  See http://www.freertos.org/a00111.html
+ * event group then NULL is returned.  See https://www.FreeRTOS.org/a00111.html
  *
  * Example usage:
  * <pre>
@@ -150,7 +150,7 @@ typedef TickType_t               EventBits_t;
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  * EventGroupHandle_t xEventGroupCreateStatic( EventGroupHandle_t * pxEventGroupBuffer );
  * </pre>
  *
@@ -160,7 +160,7 @@ typedef TickType_t               EventBits_t;
  * block of memory, in which the event group's structure is stored.  If an event
  * groups is created using xEventGropuCreate() then the required memory is
  * automatically dynamically allocated inside the xEventGroupCreate() function.
- * (see http://www.freertos.org/a00111.html).  If an event group is created
+ * (see https://www.FreeRTOS.org/a00111.html).  If an event group is created
  * using xEventGropuCreateStatic() then the application writer must instead
  * provide the memory that will get used by the event group.
  * xEventGroupCreateStatic() therefore allows an event group to be created
@@ -203,7 +203,7 @@ typedef TickType_t               EventBits_t;
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  EventBits_t xEventGroupWaitBits(    EventGroupHandle_t xEventGroup,
  *                                      const EventBits_t uxBitsToWaitFor,
  *                                      const BaseType_t xClearOnExit,
@@ -301,7 +301,7 @@ EventBits_t xEventGroupWaitBits( EventGroupHandle_t xEventGroup,
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  EventBits_t xEventGroupClearBits( EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToClear );
  * </pre>
  *
@@ -359,7 +359,7 @@ EventBits_t xEventGroupClearBits( EventGroupHandle_t xEventGroup,
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  BaseType_t xEventGroupClearBitsFromISR( EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToSet );
  * </pre>
  *
@@ -420,7 +420,7 @@ EventBits_t xEventGroupClearBits( EventGroupHandle_t xEventGroup,
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  EventBits_t xEventGroupSetBits( EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToSet );
  * </pre>
  *
@@ -495,7 +495,7 @@ EventBits_t xEventGroupSetBits( EventGroupHandle_t xEventGroup,
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  BaseType_t xEventGroupSetBitsFromISR( EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToSet, BaseType_t *pxHigherPriorityTaskWoken );
  * </pre>
  *
@@ -576,7 +576,7 @@ EventBits_t xEventGroupSetBits( EventGroupHandle_t xEventGroup,
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  EventBits_t xEventGroupSync(    EventGroupHandle_t xEventGroup,
  *                                  const EventBits_t uxBitsToSet,
  *                                  const EventBits_t uxBitsToWaitFor,
@@ -706,7 +706,7 @@ EventBits_t xEventGroupSync( EventGroupHandle_t xEventGroup,
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  EventBits_t xEventGroupGetBits( EventGroupHandle_t xEventGroup );
  * </pre>
  *
@@ -724,7 +724,7 @@ EventBits_t xEventGroupSync( EventGroupHandle_t xEventGroup,
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  EventBits_t xEventGroupGetBitsFromISR( EventGroupHandle_t xEventGroup );
  * </pre>
  *
@@ -741,7 +741,7 @@ EventBits_t xEventGroupGetBitsFromISR( EventGroupHandle_t xEventGroup ) PRIVILEG
 
 /**
  * event_groups.h
- *<pre>
+ * <pre>
  *  void xEventGroupDelete( EventGroupHandle_t xEventGroup );
  * </pre>
  *

@@ -2,7 +2,7 @@
  *  FreeRTOS V8.2.0 - Copyright (C) 2015 Real Time Engineers Ltd.
  *  All rights reserved
  *
- *  VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+ *  VISIT https://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
  *
  ***************************************************************************
  *                                                                       *
@@ -12,7 +12,7 @@
  *                                                                       *
  *    Help yourself get started quickly and support the FreeRTOS         *
  *    project by purchasing a FreeRTOS tutorial book, reference          *
- *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
+ *    manual, or both from: https://www.FreeRTOS.org/Documentation       *
  *                                                                       *
  *    Thank you!                                                         *
  *                                                                       *
@@ -32,7 +32,7 @@
  *  FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  Full license text is available from the following
- *  link: http://www.freertos.org/a00114.html
+ *  link: https://www.FreeRTOS.org/a00114.html
  *
  *
  ***************************************************************************
@@ -40,14 +40,14 @@
  *    Having a problem?  Start by reading the FAQ "My application does   *
  *    not run, what could be wrong?"                                     *
  *                                                                       *
- *    http://www.FreeRTOS.org/FAQHelp.html                               *
+ *    https://www.FreeRTOS.org/FAQHelp.html                              *
  *                                                                       *
  ***************************************************************************
  *
- *  http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+ *  https://www.FreeRTOS.org - Documentation, books, training, latest versions,
  *  license and Real Time Engineers Ltd. contact details.
  *
- *  http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+ *  https://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
  *  including FreeRTOS+Trace - an indispensable productivity tool, a DOS
  *  compatible FAT file system, and our tiny thread aware UDP/IP stack.
  *
@@ -301,41 +301,21 @@
  * *bitwise inverse* of the old mem if the mem wasn't written. This doesn't seem to happen on the
  * ESP32 (portMUX assertions would fail).
  */
-    static inline void uxPortCompareSet( volatile uint32_t * addr,
-                                         uint32_t compare,
-                                         uint32_t * set )
-    {
-        #if ( XCHAL_HAVE_S32C1I > 0 )
+        static inline void uxPortCompareSet( volatile uint32_t * addr,
+                                             uint32_t compare,
+                                             uint32_t * set )
+        {
             __asm__ __volatile__ (
                 "WSR 	    %2,SCOMPARE1 \n"
                 "S32C1I     %0, %1, 0	 \n"
                 : "=r" ( *set )
                 : "r" ( addr ), "r" ( compare ), "0" ( *set )
                 );
-        #else
-            /* No S32C1I, so do this by disabling and re-enabling interrupts (slower) */
-            uint32_t intlevel, old_value;
-            __asm__ __volatile__ ( "rsil %0, " XTSTR( XCHAL_EXCM_LEVEL ) "\n"
-                                   : "=r" ( intlevel ) );
+        }
 
-            old_value = *addr;
-
-            if( old_value == compare )
-            {
-                *addr = *set;
-            }
-
-            __asm__ __volatile__ ( "memw \n"
-                                   "wsr %0, ps\n"
-                                   : : "r" ( intlevel ) );
-
-            *set = old_value;
-        #endif /* if ( XCHAL_HAVE_S32C1I > 0 ) */
-    }
-
-    void uxPortCompareSetExtram( volatile uint32_t * addr,
-                                 uint32_t compare,
-                                 uint32_t * set );
+        void uxPortCompareSetExtram( volatile uint32_t * addr,
+                                     uint32_t compare,
+                                     uint32_t * set );
 
 /*-----------------------------------------------------------*/
 
@@ -426,6 +406,13 @@
     #define vPortFree                          heap_caps_free
     #define xPortGetFreeHeapSize               esp_get_free_heap_size
     #define xPortGetMinimumEverFreeHeapSize    esp_get_minimum_free_heap_size
+
+/*
+ * Send an interrupt to another core in order to make the task running
+ * on it yield for a higher-priority task.
+ */
+
+        void vPortYieldOtherCore( BaseType_t coreid ) PRIVILEGED_FUNCTION;
 
 
 /*

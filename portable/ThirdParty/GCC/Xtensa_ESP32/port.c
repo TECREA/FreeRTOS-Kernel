@@ -2,7 +2,7 @@
  *  FreeRTOS V8.2.0 - Copyright (C) 2015 Real Time Engineers Ltd.
  *  All rights reserved
  *
- *  VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+ *  VISIT https://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
  *
  *  This file is part of the FreeRTOS distribution.
  *
@@ -20,7 +20,7 @@
  *  FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  Full license text is available on the following
- *  link: http://www.freertos.org/a00114.html
+ *  link: https://www.FreeRTOS.org/a00114.html
  *
  ***************************************************************************
  *                                                                       *
@@ -32,28 +32,28 @@
  *    Help yourself get started quickly while simultaneously helping     *
  *    to support the FreeRTOS project by purchasing a FreeRTOS           *
  *    tutorial book, reference manual, or both:                          *
- *    http://www.FreeRTOS.org/Documentation                              *
+ *    https://www.FreeRTOS.org/Documentation                             *
  *                                                                       *
  ***************************************************************************
  *
- *  http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
+ *  https://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
  *  the FAQ page "My application does not run, what could be wrong?".  Have you
  *  defined configASSERT()?
  *
- *  http://www.FreeRTOS.org/support - In return for receiving this top quality
+ *  https://www.FreeRTOS.org/support - In return for receiving this top quality
  *  embedded software for free we request you assist our global community by
  *  participating in the support forum.
  *
- *  http://www.FreeRTOS.org/training - Investing in training allows your team to
+ *  https://www.FreeRTOS.org/training - Investing in training allows your team to
  *  be as productive as possible as early as possible.  Now you can receive
  *  FreeRTOS training directly from Richard Barry, CEO of Real Time Engineers
  *  Ltd, and the world's leading authority on the world's leading RTOS.
  *
- *  http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+ *  https://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
  *  including FreeRTOS+Trace - an indispensable productivity tool, a DOS
  *  compatible FAT file system, and our tiny thread aware UDP/IP stack.
  *
- *  http://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
+ *  https://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
  *  Come and try FreeRTOS+TCP, our new open source TCP/IP stack for FreeRTOS.
  *
  *  http://www.OpenRTOS.com - Real Time Engineers ltd. license FreeRTOS to High
@@ -95,23 +95,17 @@
 
 #include "xtensa_rtos.h"
 
-#if CONFIG_IDF_TARGET_ESP32S2
-    #include "esp32s2/rom/ets_sys.h"
-#elif CONFIG_IDF_TARGET_ESP32
-    #include "esp32/rom/ets_sys.h"
-#endif
+#include "rom/ets_sys.h"
 #include "soc/cpu.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "esp_private/panic_reason.h"
-#include "esp_debug_helpers.h"
+#include "esp_panic.h"
 #include "esp_heap_caps.h"
-#include "esp_private/crosscore_int.h"
+#include "esp_crosscore_int.h"
 
 #include "esp_intr_alloc.h"
-#include "esp_log.h"
 
 /* Defined in portasm.h */
 extern void _frxt_tick_timer_init( void );
@@ -136,19 +130,6 @@ unsigned port_interruptNesting[ portNUM_PROCESSORS ] = { 0 };  /* Interrupt nest
 
 /* User exception dispatcher when exiting */
 void _xt_user_exit( void );
-
-#if CONFIG_FREERTOS_TASK_FUNCTION_WRAPPER
-/* Wrapper to allow task functions to return (increases stack overhead by 16 bytes) */
-    static void vPortTaskWrapper( TaskFunction_t pxCode,
-                                  void * pvParameters )
-    {
-        pxCode( pvParameters );
-        /*FreeRTOS tasks should not return. Log the task name and abort. */
-        char * pcTaskName = pcTaskGetTaskName( NULL );
-        ESP_LOGE( "FreeRTOS", "FreeRTOS Task \"%s\" should not return, Aborting now!", pcTaskName );
-        abort();
-    }
-#endif /* if CONFIG_FREERTOS_TASK_FUNCTION_WRAPPER */
 
 /*
  * Stack initialization
@@ -185,35 +166,21 @@ void _xt_user_exit( void );
     frame = ( XtExcFrame * ) sp;
 
     /* Explicitly initialize certain saved registers */
-    #if CONFIG_FREERTOS_TASK_FUNCTION_WRAPPER
-        frame->pc = ( UBaseType_t ) vPortTaskWrapper; /* task wrapper						*/
-    #else
-        frame->pc = ( UBaseType_t ) pxCode;           /* task entrypoint					*/
-    #endif
-    frame->a0 = 0;                                    /* to terminate GDB backtrace		*/
-    frame->a1 = ( UBaseType_t ) sp + XT_STK_FRMSZ;    /* physical top of stack frame		*/
-    frame->exit = ( UBaseType_t ) _xt_user_exit;      /* user exception exit dispatcher	*/
+    frame->pc = ( UBaseType_t ) pxCode;             /* task entrypoint                */
+    frame->a0 = 0;                                  /* to terminate GDB backtrace     */
+    frame->a1 = ( UBaseType_t ) sp + XT_STK_FRMSZ;  /* physical top of stack frame    */
+    frame->exit = ( UBaseType_t ) _xt_user_exit;    /* user exception exit dispatcher */
 
     /* Set initial PS to int level 0, EXCM disabled ('rfe' will enable), user mode. */
     /* Also set entry point argument parameter. */
     #ifdef __XTENSA_CALL0_ABI__
-        #if CONFIG_FREERTOS_TASK_FUNCTION_WRAPPER
-            frame->a2 = ( UBaseType_t ) pxCode;
-            frame->a3 = ( UBaseType_t ) pvParameters;
-        #else
-            frame->a2 = ( UBaseType_t ) pvParameters;
-        #endif
+        frame->a2 = ( UBaseType_t ) pvParameters;
         frame->ps = PS_UM | PS_EXCM;
     #else
         /* + for windowed ABI also set WOE and CALLINC (pretend task was 'call4'd). */
-        #if CONFIG_FREERTOS_TASK_FUNCTION_WRAPPER
-            frame->a6 = ( UBaseType_t ) pxCode;
-            frame->a7 = ( UBaseType_t ) pvParameters;
-        #else
-            frame->a6 = ( UBaseType_t ) pvParameters;
-        #endif
+        frame->a6 = ( UBaseType_t ) pvParameters;
         frame->ps = PS_UM | PS_EXCM | PS_WOE | PS_CALLINC( 1 );
-    #endif /* ifdef __XTENSA_CALL0_ABI__ */
+    #endif
 
     #ifdef XT_USE_SWPRI
         /* Set the initial virtual priority mask value to all 1's. */
